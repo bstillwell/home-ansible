@@ -19,7 +19,7 @@
 
     - name: Add SaltStack APT repository
       ansible.builtin.apt_repository:
-        repo: "deb https://repo.saltstack.com/py3/ubuntu/20.04/{{ remote_arch }}/latest {{ ansible_distribution_release }} main"
+        repo: "deb https://repo.saltstack.com/py3/ubuntu/20.04/{{ remote_arch }}/latest focal main"
         filename: saltstack
         state: present
 
