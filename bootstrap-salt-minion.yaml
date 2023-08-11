@@ -1,0 +1,46 @@
+---
+# This playbook can be used to bootstrap a system as a salt-minion.
+#
+# Usage:
+#   ansible-playbook -i target_hostname, bootstrap-salt-minion.yaml -K
+
+- name: Install the salt minion on an Ubuntu based system
+  hosts: all
+  become: true
+
+  tasks:
+    - name: Set the architecture fact based on the remote system
+      set_fact: remote_arch={{ 'arm64' if ansible_architecture == 'aarch64' else 'amd64' }}
+
+    - name: Add SaltStack APT repository key
+      ansible.builtin.apt_key:
+        url: https://repo.saltstack.com/py3/ubuntu/20.04/{{ remote_arch }}/latest/SALTSTACK-GPG-KEY.pub
+        state: present
+
+    - name: Add SaltStack APT repository
+      ansible.builtin.apt_repository:
+        repo: "deb https://repo.saltstack.com/py3/ubuntu/20.04/{{ remote_arch }}/latest {{ ansible_distribution_release }} main"
+        filename: saltstack
+        state: present
+
+    - name: Update APT cache
+      ansible.builtin.apt:
+        update_cache: yes
+
+    - name: Install the salt minion
+      ansible.builtin.apt:
+        name: salt-minion
+        state: present
+
+    - name: Configure the salt minion
+      ansible.builtin.copy:
+        src: files/salt-minion.conf
+        dest: /etc/salt/minion
+      notify:
+        - Restart Salt Minion
+
+  handlers:
+    - name: Restart Salt Minion
+      ansible.builtin.service:
+        name: salt-minion
+        state: restarted
