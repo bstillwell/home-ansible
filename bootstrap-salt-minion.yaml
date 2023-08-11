@@ -30,7 +30,7 @@
     - name: Install the salt minion
       ansible.builtin.apt:
         name: salt-minion
-        state: present
+        state: latest
 
     - name: Configure the salt minion
       ansible.builtin.copy:
