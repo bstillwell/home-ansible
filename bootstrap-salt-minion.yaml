@@ -12,15 +12,15 @@
     - name: Set the architecture fact based on the remote system
       set_fact: remote_arch={{ 'arm64' if ansible_architecture == 'aarch64' else 'amd64' }}
 
-    - name: Add SaltStack APT repository key
-      ansible.builtin.apt_key:
-        url: https://repo.saltstack.com/py3/ubuntu/20.04/{{ remote_arch }}/latest/SALTSTACK-GPG-KEY.pub
+    - name: Add Salt Open APT repository key
+      ansible.builtin.get_url:
+        url: https://repo.saltproject.io/salt/py3/ubuntu/24.04/{{ remote_arch }}/SALT-PROJECT-GPG-PUBKEY-2023.gpg
         state: present
 
-    - name: Add SaltStack APT repository
+    - name: Add Salt Open APT repository
       ansible.builtin.apt_repository:
-        repo: "deb https://repo.saltstack.com/py3/ubuntu/20.04/{{ remote_arch }}/latest focal main"
-        filename: saltstack
+        repo: "deb [signed-by=/etc/apt/keyrings/salt-archive-keyring-2023.gpg arch={{ remote_arch }}] https://repo.saltproject.io/salt/py3/ubuntu/24.04/{{ remote_arch }}/3007 noble main"
+        filename: salt
         state: present
 
     - name: Update APT cache
@@ -35,7 +35,7 @@
     - name: Configure the salt minion
       ansible.builtin.template:
         src: files/salt-minion.conf.jinja
-        dest: /etc/salt/minion
+        dest: /etc/salt/minion.d/master.conf
       notify:
         - Restart Salt Minion
 
