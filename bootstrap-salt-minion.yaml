@@ -15,7 +15,7 @@
     - name: Add Salt Open APT repository key
       ansible.builtin.get_url:
         url: https://repo.saltproject.io/salt/py3/ubuntu/24.04/{{ remote_arch }}/SALT-PROJECT-GPG-PUBKEY-2023.gpg
-        state: present
+        dest: /etc/apt/keyrings/salt-archive-keyring-2023.gpg
 
     - name: Add Salt Open APT repository
       ansible.builtin.apt_repository:
