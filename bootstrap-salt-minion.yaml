@@ -65,6 +65,7 @@
     - name: Update APT cache
       ansible.builtin.apt:
         update_cache: yes
+      changed_when: False
 
     - name: Install the salt minion
       ansible.builtin.apt:
