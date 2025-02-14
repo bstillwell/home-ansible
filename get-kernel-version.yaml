@@ -1,0 +1,8 @@
+---
+- name: Display Running Kernel Version
+  hosts: all
+  gather_facts: yes
+  tasks:
+    - name: Get running kernel version
+      debug:
+        msg: "The running kernel version is {{ ansible_kernel }}"
