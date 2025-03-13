@@ -1,0 +1,63 @@
+---
+
+#############################
+- hosts: mgrs
+  gather_facts: yes
+  become: true
+  serial: 1
+
+  vars_files:
+    - vars/ceph_version.yaml
+
+  tasks:
+    - import_tasks: tasks/get-mgr-version.yaml
+    - block:
+      - import_tasks: tasks/upgrade-packages.yaml
+      - import_tasks: tasks/restart-mgr.yaml
+      when: current_mgr_version != target_ceph_version
+
+
+#############################
+- name: Upgrade mons
+  hosts: mons
+  gather_facts: yes
+  become: true
+  serial: 1
+
+  vars_files:
+    - vars/ceph_version.yaml
+
+  tasks:
+    - import_tasks: tasks/get-mon-version.yaml
+    - block:
+      - import_tasks: tasks/upgrade-packages.yaml
+      - import_tasks: tasks/restart-mon.yaml
+      when: current_mon_version != target_ceph_version
+
+
+#############################
+- name: Upgrade osds
+  hosts: osds
+  gather_facts: yes
+  become: true
+  serial: 1
+
+  vars_files:
+    - vars/ceph_version.yaml
+
+  tasks:
+    - import_tasks: tasks/upgrade-packages.yaml
+    - import_tasks: tasks/restart-osds.yaml
+    - import_tasks: tasks/set-osd-requirement.yaml
+
+#############################
+- name: Complete upgrade
+  hosts: "{{ groups['mons'] | first }}"
+  gather_facts: no
+  become: true
+
+  vars_files:
+    - vars/ceph_version.yaml
+
+  tasks:
+    - import_tasks: tasks/set-osd-requirement.yaml

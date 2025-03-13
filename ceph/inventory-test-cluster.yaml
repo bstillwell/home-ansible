@@ -1,0 +1,16 @@
+mgrs:
+  hosts:
+    ceph01.stillwell:
+    ceph02.stillwell:
+    ceph03.stillwell:
+mons:
+  hosts:
+    ceph01.stillwell:
+    ceph02.stillwell:
+    ceph03.stillwell:
+osds:
+  hosts:
+    ceph01.stillwell:
+    ceph02.stillwell:
+    ceph03.stillwell:
+    ceph04.stillwell:

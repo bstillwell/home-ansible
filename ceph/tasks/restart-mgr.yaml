@@ -1,0 +1,22 @@
+---
+- name: Wait until there's at least one standby mgr before continuing
+  command: "ceph mgr stat"
+  register: mgr_stat
+  until: (mgr_stat.stdout | from_json)['num_standby'] >= 1
+  retries: 30
+  delay: 10
+  changed_when: false
+
+- name: Restart the mgr service
+  systemd:
+    name: "ceph-mgr@{{ inventory_hostname_short }}"
+    state: restarted
+    enabled: yes
+
+- name: Wait for the mgr to show up with the correct version
+  command: "ceph mgr metadata {{ inventory_hostname_short }}"
+  register: mgr_metadata
+  until: (mgr_metadata.stdout | from_json)['ceph_version_short'] == target_ceph_version
+  retries: 30
+  delay: 10
+  changed_when: false

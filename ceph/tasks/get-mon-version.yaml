@@ -1,0 +1,9 @@
+---
+- name: Get metadata for the current mon
+  command: "ceph mon metadata {{ inventory_hostname_short }}"
+  register: mon_metadata
+  changed_when: false
+
+- name: Parse metadata and store the mon version as a fact
+  set_fact:
+    current_mon_version: "{{ mon_metadata.stdout | from_json | json_query('ceph_version_short') }}"

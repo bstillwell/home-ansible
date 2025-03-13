@@ -1,0 +1,32 @@
+---
+- name: Wait until it's safe to stop this mon
+  command: "ceph mon ok-to-stop {{ inventory_hostname_short }}"
+  register: safe_to_stop
+  until: safe_to_stop.rc == 0
+  retries: 30
+  delay: 10
+  changed_when: false
+
+- name: Restart the Mon service
+  systemd:
+    name: "ceph-mon@{{ inventory_hostname_short }}"
+    state: restarted
+    enabled: yes
+
+- name: Wait for the mon to show up with the correct version
+  command: "ceph mon metadata {{ inventory_hostname_short }}"
+  register: mon_metadata
+  until: (mon_metadata.stdout | from_json)['ceph_version_short'] == target_ceph_version
+  retries: 30
+  delay: 10
+  delegate_to: "{{ groups['mons'] | difference([inventory_hostname_short]) | first }}"
+  changed_when: false
+
+- name: Wait for the mon to join the quorum
+  command: "ceph quorum_status"
+  register: quorum_status
+  until: inventory_hostname_short in (quorum_status.stdout | from_json)['quorum_names']
+  retries: 30
+  delay: 10
+  delegate_to: "{{ groups['mons'] | difference([inventory_hostname_short]) | first }}"
+  changed_when: false
