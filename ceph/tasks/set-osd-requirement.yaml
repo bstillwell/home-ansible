@@ -1,0 +1,10 @@
+---
+- name: Get output from 'ceph osd dump'
+  command: "ceph osd dump -f json"
+  register: osd_dump
+  changed_when: false
+
+- name: Set require_osd_release
+  command: "ceph osd require-osd-release {{ target_ceph_release }}"
+  when: (osd_dump.stdout | from_json)['require_osd_release'] != target_ceph_release
+

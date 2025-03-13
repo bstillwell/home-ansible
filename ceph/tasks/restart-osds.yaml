@@ -1,0 +1,67 @@
+---
+- name: Collect metadata for all OSDs
+  command: "ceph osd metadata"
+  register: osd_metadata
+  changed_when: false
+  delegate_to: "{{ groups['mons'] | first }}"
+
+- name: Extract metadata for OSDs on the current host
+  set_fact:
+    osds_on_host: "{{ osd_metadata.stdout | from_json | selectattr('hostname', 'equalto', inventory_hostname) }}"
+
+- name: Filter out OSDs that are outdated
+  set_fact:
+    outdated_osds: "{{ osds_on_host | rejectattr('ceph_version_short', 'equalto', target_ceph_version) }}"
+
+- name: Create a list of OSD IDs that are outdated on this host
+  set_fact:
+    outdated_osd_ids: "{{ outdated_osds | json_query('[].id') }}"
+
+- block:
+  - name: Wait for OSDs to be ok_to_stop
+    command: "ceph osd ok-to-stop {{ outdated_osd_ids | join(' ') }} -f json"
+    register: ok_to_stop_status
+    until: (ok_to_stop_status.stdout | from_json)['ok_to_stop'] == true
+    retries: 120
+    delay: 30
+    delegate_to: "{{ groups['mons'] | first }}"
+    changed_when: false
+
+  - name: Set noout flag
+    command: ceph osd set-group noout {{ inventory_hostname_short }}
+    delegate_to: "{{ groups['mons'] | first }}"
+
+  - name: Stop the OSDs
+    systemd:
+      name: ceph-osd@{{ osd_id }}
+      state: stopped
+      enabled: yes
+    with_items: "{{ outdated_osd_ids }}"
+    loop_control:
+      loop_var: osd_id
+      pause: 3
+
+  - name: Start the OSDs
+    systemd:
+      name: ceph-osd@{{ osd_id }}
+      state: started
+      enabled: yes
+    with_items: "{{ outdated_osd_ids }}"
+    loop_control:
+      loop_var: osd_id
+      pause: 3
+
+  - name: Wait for OSDs to come online
+    command: ceph pg dump_stuck unclean
+    register: unclean_pgs
+    until: (unclean_pgs.stdout_lines | length) == 0
+    retries: 1200
+    delay: 30
+    delegate_to: "{{ groups['mons'] | first }}"
+    changed_when: false
+
+  - name: Unset noout flag
+    command: ceph osd unset-group noout {{ inventory_hostname_short }}
+    delegate_to: "{{ groups['mons'] | first }}"
+
+  when: outdated_osds | length  > 0

@@ -1,0 +1,32 @@
+---
+- name: Gather package facts
+  ansible.builtin.package_facts:
+    manager: apt
+
+- block:
+  - name: Point the Ceph repo at the target release
+    ansible.builtin.copy:
+      content: "deb http://download.ceph.com/debian-{{ target_ceph_version }}/ {{ ansible_distribution_release }} main\n"
+      dest: /etc/apt/sources.list.d/ceph.list
+      owner: root
+      group: root
+      mode: "0644"
+
+  - name: Mask ceph-mgr so it doesn't restart during the package upgrade
+    ansible.builtin.systemd:
+      name: "ceph-mgr@{{ inventory_hostname_short }}"
+      masked: true
+    when: inventory_hostname in groups['mgrs']
+
+  - name: Upgrade Ceph packages
+    ansible.builtin.apt:
+      name: "ceph={{ target_ceph_pkg_version }}"
+      state: present
+      update_cache: true
+
+  - name: Unmask ceph-mgr
+    ansible.builtin.systemd:
+      name: "ceph-mgr@{{ inventory_hostname_short }}"
+      masked: false
+    when: inventory_hostname in groups['mgrs']
+  when: ansible_facts.packages['ceph'][0].version != target_ceph_pkg_version

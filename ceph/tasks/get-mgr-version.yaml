@@ -1,0 +1,9 @@
+---
+- name: Get metadata for the current mgr
+  command: "ceph mgr metadata {{ inventory_hostname_short }}"
+  register: mgr_metadata
+  changed_when: false
+
+- name: Parse metadata and store the mgr version as a fact
+  set_fact:
+    current_mgr_version: "{{ mgr_metadata.stdout | from_json | json_query('ceph_version_short') }}"
