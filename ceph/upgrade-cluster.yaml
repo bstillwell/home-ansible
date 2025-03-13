@@ -48,7 +48,6 @@
   tasks:
     - import_tasks: tasks/upgrade-packages.yaml
     - import_tasks: tasks/restart-osds.yaml
-    - import_tasks: tasks/set-osd-requirement.yaml
 
 #############################
 - name: Complete upgrade
