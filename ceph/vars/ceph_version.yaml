@@ -1,4 +1,4 @@
 ---
 target_ceph_release: "reef"
-target_ceph_version: "18.2.4"
-target_ceph_pkg_version: "18.2.4-1{{ ansible_distribution_release }}"
+target_ceph_version: "18.2.5"
+target_ceph_pkg_version: "18.2.5-1{{ ansible_distribution_release }}"
