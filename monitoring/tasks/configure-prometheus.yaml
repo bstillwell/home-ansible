@@ -1,0 +1,21 @@
+---
+- name: Configure Prometheus to scrape all systems
+  ansible.builtin.template:
+    src: files/prometheus.yml.jinja
+    dest: /etc/prometheus/prometheus.yml
+    mode: '0644'
+  notify: Restart Prometheus
+
+- name: Create Ceph targets service discovery file
+  ansible.builtin.template:
+    src: files/ceph_targets.yml.jinja
+    dest: /etc/prometheus/ceph_targets.yml
+    mode: '0644'
+  notify: Restart Prometheus
+
+- name: Create node targets service discovery file
+  ansible.builtin.template:
+    src: files/node_targets.yml.jinja
+    dest: /etc/prometheus/node_targets.yml
+    mode: '0644'
+  notify: Restart Prometheus

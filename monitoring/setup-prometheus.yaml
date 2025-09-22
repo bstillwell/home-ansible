@@ -1,0 +1,17 @@
+---
+# This playbook sets up Prometheus on all prom nodes
+#
+# Example of using this playbook:
+#   $ ansible-playbook monitoring/setup-prometheus.yaml -i inventory/homelab.ini
+
+- hosts: prometheus
+  gather_facts: no
+  become: true
+  serial: 1
+
+  tasks:
+    - import_tasks: tasks/install-prometheus.yaml
+    - import_tasks: tasks/configure-prometheus.yaml
+
+  handlers:
+    - import_tasks: handlers/main.yaml
