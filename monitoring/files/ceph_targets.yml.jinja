@@ -1,0 +1,4 @@
+- targets:
+{% for host in groups['ceph-mgrs'] %}
+  - "{{ host }}:9283"
+{% endfor %}
