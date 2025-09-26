@@ -1,0 +1,17 @@
+---
+# This playbook sets up HAProxy on all haproxy nodes
+#
+# Example of using this playbook:
+#   $ ansible-playbook monitoring/setup-haproxy.yaml -i inventory/homelab.ini
+
+- hosts: haproxy
+  gather_facts: no
+  become: true
+  serial: 1
+
+  tasks:
+    - import_tasks: tasks/install-haproxy.yaml
+#    - import_tasks: tasks/configure-haproxy.yaml
+#
+#  handlers:
+#    - import_tasks: handlers/main.yaml
