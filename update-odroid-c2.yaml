@@ -58,10 +58,6 @@
     - name: Reboot the server if required
       ansible.builtin.reboot:
         msg: "Rebooting system by Ansible after a full-upgrade"
-        reboot_timeout: "300"
-        connect_timeout: 30
-        delay: 10
-        pre_reboot_delay: 15
       when:
         - reboot_required.stat.exists
 
