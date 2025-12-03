@@ -27,11 +27,14 @@
         state: stopped
         enabled: no
 
-    - name: Stop and disable zram-config service
-      ansible.builtin.service:
-        name: armbian-zram-config
-        state: stopped
-        enabled: no
+    - name: Disable swap
+      ansible.builtin.command: swapoff -a
+
+    - name: Ensure armbian-zram-config doesn't enable swap
+      ansible.builtin.lineinfile:
+        path: /etc/default/armbian-zram-config
+        regexp: '^# SWAP.*$'
+        line: 'SWAP=false'
 
     - name: Update APT cache
       ansible.builtin.apt:
