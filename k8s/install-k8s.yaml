@@ -1,0 +1,39 @@
+---
+# Usage:
+#   ansible-playbook -i tropicana, k8s/install-k8s.yaml -K
+
+- name: Install Kubernetes on a system
+  hosts: all
+  gather_facts: false
+  become: true
+
+  tasks:
+    - name: Install the Kubernetes dependencies
+      ansible.builtin.apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg
+        state: latest
+      register: apt_kubernetes_dependencies
+
+    - name: Add the Kubernetes repo keyring to the system
+      ansible.builtin.copy:
+        src: files/kubernetes-apt-keyring.gpg
+        dest: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: Add the Kubernetes repository
+      ansible.builtin.apt_repository:
+        repo: "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.34/deb/ /"
+        filename: kubernetes
+
+    - name: Install kubectl
+      ansible.builtin.apt:
+        name:
+          - kubectl
+        state: latest
+        update_cache: true
