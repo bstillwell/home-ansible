@@ -9,6 +9,7 @@
   tasks:
     - import_tasks: tasks/disable-swap.yaml
     - import_tasks: tasks/upgrade-ubuntu.yaml
+    - import_tasks: tasks/install-packages.yaml
 
     # System specific changes
     - block:
