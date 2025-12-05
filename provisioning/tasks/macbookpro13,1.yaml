@@ -28,6 +28,15 @@
   ansible.builtin.command: update-grub
   when: grub_result.changed
 
+- name: Create /var/run/reboot-required
+  ansible.builtin.file:
+    path: /var/run/reboot-required
+    state: touch
+    mode: "0644"
+    modification_time: preserve
+    access_time: preserve
+  when: fontface_result.changed or fontsize_result.changed or grub_result.changed
+
 - name: Add systemd service file to set fb resolution to 2560x1600
   ansible.builtin.copy:
     src: files/fbset-2560x1600.service
