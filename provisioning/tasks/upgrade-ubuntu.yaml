@@ -1,0 +1,7 @@
+---
+- name: Do a full upgrade of the system
+  ansible.builtin.apt:
+    upgrade: full
+    autoremove: yes
+    autoclean: yes
+    update_cache: true

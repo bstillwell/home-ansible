@@ -1,0 +1,18 @@
+---
+# Usage:
+#   ansible-playbook -i aladdin, provisioning/bootstrap.yaml -K
+
+- name: Provision a freshly installed system
+  hosts: all
+  become: true
+
+  tasks:
+    - import_tasks: tasks/disable-swap.yaml
+    - import_tasks: tasks/upgrade-ubuntu.yaml
+
+    # System specific changes
+    - block:
+      - import_tasks: tasks/macbookpro13,1.yaml
+      when: ansible_facts["board_version"] == "MacBookPro13,1"
+
+    - import_tasks: tasks/reboot-if-needed.yaml

@@ -1,0 +1,46 @@
+---
+- name: Switch to the TER font
+  ansible.builtin.replace:
+    path: /etc/default/console-setup
+    regexp: '^FONTFACE=.*$'
+    replace: 'FONTFACE="TER"'
+  register: fontface_result
+
+- name: Adjust font size to be 12x24
+  ansible.builtin.replace:
+    path: /etc/default/console-setup
+    regexp: '^FONTSIZE=.*$'
+    replace: 'FONTSIZE="12x24"'
+  register: fontsize_result
+
+- name: Rebuild initramfs if console font settings changed
+  ansible.builtin.command: update-initramfs -u
+  when: fontface_result.changed or fontsize_result.changed
+
+- name: Fix the incorrect EDID resolution
+  ansible.builtin.replace:
+    path: /etc/default/grub
+    regexp: '^GRUB_CMDLINE_LINUX_DEFAULT=.*$'
+    replace: 'GRUB_CMDLINE_LINUX_DEFAULT="video=eDP-1:2560x1600@60"'
+  register: grub_result
+
+- name: Update grub
+  ansible.builtin.command: update-grub
+  when: grub_result.changed
+
+- name: Add systemd service file to set fb resolution to 2560x1600
+  ansible.builtin.copy:
+    src: files/fbset-2560x1600.service
+    dest: /etc/systemd/system/fbset-2560x1600.service
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Reload systemctl
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Enable the fbset service 
+  ansible.builtin.systemd:
+    name: fbset-2560x1600.service
+    enabled: true
