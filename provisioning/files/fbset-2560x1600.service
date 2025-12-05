@@ -1,0 +1,10 @@
+[Unit]
+Description=Set Framebuffer Resolution to 2560x1600
+After=multi-user.target
+
+[Service]
+ExecStart=/usr/bin/fbset -fb /dev/fb0 -g 2560 1600 2560 1600 32
+Type=oneshot
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,15 @@
+---
+- name: Stop swap on the running system
+  ansible.builtin.command: swapoff -a
+  when: ansible_facts["swaptotal_mb"] > 0
+
+- name: Remove swap entries from /etc/fstab
+  ansible.builtin.replace:
+    path: /etc/fstab
+    regexp: '^(\/swap\.img.*)$'
+    replace: '# \1'
+
+- name: Remove default Ubuntu swapfile if it exists
+  ansible.builtin.file:
+    path: /swap.img
+    state: absent

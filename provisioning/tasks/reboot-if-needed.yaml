@@ -1,0 +1,11 @@
+---
+- name: Check if a reboot is required
+  ansible.builtin.stat:
+    path: /var/run/reboot-required
+  register: reboot_required
+
+- name: Reboot the server if required
+  ansible.builtin.reboot:
+    msg: "Rebooting system by Ansible after a full-upgrade"
+  when:
+    - reboot_required.stat.exists
